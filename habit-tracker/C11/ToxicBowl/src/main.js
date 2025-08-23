@@ -2,7 +2,7 @@ const form = document.getElementById('habit_form')
 const habitList = document.getElementById('habit_list')
 
 //load habits from local storage or start with an empty array
-let habits = JSON.parse(localStorage.getItem('habits')) || []
+const habits = JSON.parse(localStorage.getItem('habits')) || []
 
 
 function saveHabits(){
@@ -16,7 +16,7 @@ form.addEventListener('submit', (event) => {
     const data = new FormData(event.target)
     const habit = {
         name: data.get('habit_name'),
-        targetStreak: Number(data.get('target_streak')),
+        targetStreak: parseInt(data.get('target_streak')),
         completedDates: [] 
     }
 
@@ -47,14 +47,15 @@ function renderHabits() {
     const bgColor = `rgb(${r},${g},${b})`
 
      return `
-  <li style="background-color: ${bgColor}; padding: 5px; margin: 5px; border-radius: 5px">
-      ${habit.name} - Target Streak: ${habit.targetStreak} Current: ${currentStreak} Longest: ${longestStreak}
+  <li style="background-color: ${bgColor};">
+      <span>${habit.name} - Target Streak: ${habit.targetStreak} Current: ${currentStreak} Longest: ${longestStreak}</span>
+    <span>
       <button data-index="${index}" class="completion-toggle-btn">
       ${isCompleteToday ? "Undo" : "Mark as Complete"}
       </button>
       <button data-index="${index}" class="edit-btn">Edit</button>
       <button data-index="${index}" class="delete-btn">Delete</button> 
-
+    </span>  
     </li>
   `
   }).join('');
@@ -129,6 +130,10 @@ function getCurrentStreak(habit){
   return Streak
 }
 
+function getDayDifference(date1, date2){
+  return Math.floor((date2 - date1) / (1000 * 60 * 60 * 24))
+}
+
 function getLongestStreak(habit){
   if (habit.completedDates.length === 0) return 0
 
@@ -141,10 +146,10 @@ function getLongestStreak(habit){
   let Streak = 1
 
   for(let i = 1; i < dates.length; i++){
-    const diffDays = Math.round((dates[i] - dates[i - 1]) / (1000 * 60 * 60 * 24))
+    const diffDays = Math.round(getDayDifference(dates[i-1], dates[i]))
     if (diffDays === 1){
       Streak++
-      if (Streak > longest) longest = Streak
+      longest = Math.max(longest, streak)
     } else if (diffDays > 1){
       Streak = 1 //broken streak
     }
